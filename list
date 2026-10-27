@@ -1,0 +1,161 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+struct node {
+    string str;
+    node* next;
+    node* prev;
+};
+
+struct node_list {
+    node* start;
+    int lenght;
+
+    node_list() {
+        start = nullptr;
+        lenght = 0;
+    }
+
+    ~node_list() {
+        free_all();
+    }
+
+    node* insert_str(node* after, string str) {
+        node* new_node = new node;
+        new_node->str = str;
+
+        if (lenght == 0) {
+            start = new_node;
+            new_node->next = new_node;
+            new_node->prev = new_node;
+        } else {
+            if (after == nullptr) {
+                after = start;
+            }
+
+            new_node->next = after->next;
+            new_node->prev = after;
+            after->next->prev = new_node;
+            after->next = new_node;
+        }
+
+        lenght++;
+        return new_node;
+    }
+
+    void delete_node(node* n) {
+        if (n == nullptr || lenght == 0) return;
+
+        if (lenght == 1) {
+            start = nullptr;
+        } else {
+            n->prev->next = n->next;
+            n->next->prev = n->prev;
+
+            if (start == n) {
+                start = n->next;
+            }
+        }
+
+        delete n;
+        lenght--;
+    }
+
+    void free_all() {
+        if (lenght == 0) return;
+
+        node* cur = start;
+        for (int i = 0; i < lenght; i++) {
+            node* next_node = cur->next;
+            delete cur;
+            cur = next_node;
+        }
+
+        start = nullptr;
+        lenght = 0;
+    }
+
+    void swap_node(node* a, node* b) {
+        if (a == nullptr || b == nullptr || a == b) return;
+
+        if (start == a) start = b;
+        else if (start == b) start = a;
+
+        if (a->next == b) {
+            node* a_prev = a->prev;
+            node* b_next = b->next;
+
+            a_prev->next = b;
+            b->prev = a_prev;
+
+            b->next = a;
+            a->prev = b;
+
+            a->next = b_next;
+            b_next->prev = a;
+            return;
+        }
+        if (b->next == a) {
+            swap_node(b, a);
+            return;
+        }
+
+        node* a_prev = a->prev;
+        node* a_next = a->next;
+        node* b_prev = b->prev;
+        node* b_next = b->next;
+
+        a_prev->next = b;
+        a_next->prev = b;
+
+        b_prev->next = a;
+        b_next->prev = a;
+
+        a->next = b_next;
+        a->prev = b_prev;
+
+        b->next = a_next;
+        b->prev = a_prev;
+    }
+
+    void print_list() {
+        if (lenght == 0 || start == nullptr) {
+            cout << "Список пуст" << endl;
+            return;
+        }
+
+        node* cur_node = start;
+        for (int i = 0; i < lenght; i++) {
+            cout << cur_node->str << " ";
+            cur_node = cur_node->next;
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    node_list list;
+
+    node* node_aaa = list.insert_str(nullptr, "aaa");
+    node* node_bbb = list.insert_str(node_aaa, "bbb");
+    node* node_ccc = list.insert_str(node_bbb, "ccc");
+    node* node_ddd = list.insert_str(node_ccc, "ddd");
+    list.insert_str(node_ddd, "fff");
+
+    cout << "Исходный список: " << endl;
+    list.print_list();
+
+    cout << "\nУдаление узла 'bbb':" << endl;
+    list.delete_node(node_bbb);
+    list.print_list();
+
+    cout << "\nПерестановка узлов 'ccc' и 'ddd' местами:" << endl;
+    list.swap_node(node_ccc, node_ddd);
+    list.print_list();
+
+    return 0;
+}
